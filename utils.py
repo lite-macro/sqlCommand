@@ -32,6 +32,7 @@ conn_my = pymysql.connections.Connection
 Iter = Iterable
 error = str
 
+
 @toolz.curry
 def join(s: str, it: Iter[str]) -> str:
     return s.join(it)
@@ -59,32 +60,24 @@ def cols_types(columns: Iter, types: Iter) -> list:
 
 
 @toolz.curry
-def execute(conn, sql: str) -> error:
-    err = ''
-    cur = conn.cursor()
+def execute(cur, sql: str) -> None:
     print(sql)
-    try:
-        cur.execute(sql)
-    except Exception as e:
-        logger.error(e)
-        err = e
-        conn.commit()
-    return err
+    cur.execute(sql)
 
 
 @toolz.curry
-def execute_pg(conn: conn_pg, sql: str) -> error:
-    return execute(conn, sql)
+def execute_pg(cur: psycopg2.extensions.cursor, sql: str) -> None:
+    return execute(cur, sql)
 
 
 @toolz.curry
-def execute_lite(conn: conn_lite, sql: str) -> error:
-    return execute(conn, sql)
+def execute_lite(cur: sqlite3.Cursor, sql: str) -> None:
+    return execute(cur, sql)
 
 
 @toolz.curry
-def execute_my(conn: conn_my, sql: str) -> error:
-    return execute(conn, sql)
+def execute_my(cur: pymysql.cursors.Cursor, sql: str) -> None:
+    return execute(cur, sql)
 
 
 def changeTypesAndReplace(table: str, inColumns, stringColumns, conn, to_replace=None, value=None):
