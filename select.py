@@ -7,6 +7,7 @@ from typing import Iterable
 from functools import partial
 from sqlCommand.utils import join, logger, quote, cols_types, quote_join_comma, execute_lite, execute_pg, execute_my
 from sqlCommand.utils import conn_lite, conn_pg, conn_my
+from astype import as_type_dict
 
 
 @toolz.curry
@@ -24,7 +25,22 @@ def s_dist_pg(conn: conn_pg, table: str, cols: Iterable) -> pd.DataFrame:
 @toolz.curry
 def s_where_lite(conn, table, row) -> pd.DataFrame:
     sql = 'SELECT * FROM `{}` where {}'.format(table, join(' and ', ["`{0}`='{1}'".format(key, value) for key, value in row.items()]))
+    print(sql)
     return pd.read_sql_query(sql, conn)
+
+
+@toolz.curry
+def s_where_with_type_lite(cur: sqlite3.Cursor, table: str, dtypes: dict, row: dict) -> pd.DataFrame:
+    # sqlite3 also needs type to select data correctly, which type is correct needs try and error, sometimes int or str can't not be distinquished explicitly
+    sql = 'SELECT * FROM `{}` where {}'.format(table, join(' and ', ["{}=?".format(key) for key in row.keys()]))
+    print(sql)
+    row = as_type_dict(dtypes, row)
+    print(row)
+    cur.execute(sql, tuple(row.values()))
+    data = cur.fetchall()
+    cur.execute("SELECT name FROM pragma_table_info('{}')".format(table))
+    cols = cur.fetchall()
+    return pd.DataFrame(data, columns = [col[0] for col in cols])
 
 
 @toolz.curry

@@ -38,7 +38,6 @@ def join(s: str, it: Iter[str]) -> str:
     return s.join(it)
 
 
-# mysql use ` while postgresql use "; ' and [ are invalid in postgresql
 @toolz.curry
 def quote(symbol: any, it: Iter) -> List[str]:
     return ['{0}{1}{0}'.format(symbol, col) for col in it]
@@ -79,20 +78,3 @@ def execute_lite(cur: sqlite3.Cursor, sql: str) -> None:
 def execute_my(cur: pymysql.cursors.Cursor, sql: str) -> None:
     return execute(cur, sql)
 
-
-def changeTypesAndReplace(table: str, inColumns, stringColumns, conn, to_replace=None, value=None):
-    try:
-        df = selectAll(table, conn).replace(to_replace, value)
-        df[inColumns] = df[inColumns].astype(int)
-        df[stringColumns] = df[stringColumns].astype(str)
-        floatColumns = [col for col in list(df) if col not in inColumns + stringColumns]
-        df[floatColumns] = df[floatColumns].astype(float)
-        primary_keys = getPrimaryKeys(table, conn)
-        columns = list(df)
-        table_old = table + '0'
-        renameTable(table, table_old, conn)
-        createTable(table, columns, primary_keys, conn)
-        insertData(table, df, conn)
-        dropTable(table_old, conn)
-    except Exception as e:
-        logger.error(e)

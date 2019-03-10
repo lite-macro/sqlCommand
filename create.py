@@ -1,12 +1,12 @@
 import sqlite3
 import psycopg2
 import pymysql
-import toolz.curried
+import cytoolz.curried
 from sqlCommand.utils import logger, quote, cols_types, quote_join_comma, execute_lite, execute_pg, execute_my
 from sqlCommand.utils import Iter, conn_lite, conn_pg, conn_my
 
 
-@toolz.curry
+@cytoolz.curry
 def ct_sql(identifier, table: str, columns: Iter[str], primary_keys: Iter[str]) -> str:
     columns_join = ', '.join(columns)
     primary_keys_join = ', '.join(primary_keys)
@@ -14,36 +14,36 @@ def ct_sql(identifier, table: str, columns: Iter[str], primary_keys: Iter[str]) 
     return sql
 
 
-@toolz.curry
+@cytoolz.curry
 def ct_lite_sql(table: str, columns: Iter, primary_keys: Iter) -> str:
     return ct_sql('`', table, columns, primary_keys)
 
 
-@toolz.curry
+@cytoolz.curry
 def ct_pg_sql(table: str, columns: Iter, field_types: Iter, primary_keys: Iter) -> str:
     z = zip(columns, field_types)
-    return ct_sql('"', table, ['{} {}'.format(col, type) for col, type in z], primary_keys)
+    return ct_sql('"', table, ['"{}" {}'.format(col, type) for col, type in z], primary_keys)
 
 
-@toolz.curry
+@cytoolz.curry
 def ct_my_sql(table: str, columns: Iter, field_types: Iter, primary_keys: Iter) -> str:
     z = zip(columns, field_types)
     return ct_sql('`', table, ['{} {}'.format(col, type) for col, type in z], primary_keys)
 
 
-@toolz.curry
+@cytoolz.curry
 def ct_lite(conn: conn_lite, table: str, columns: Iter, primary_keys: Iter) -> None:
-    execute_lite(conn, ct_pg_sql(table, columns, primary_keys))
+    execute_lite(conn, ct_lite_sql(table, columns, primary_keys))
     conn.commit()
 
 
-@toolz.curry
+@cytoolz.curry
 def ct_pg(conn: conn_pg, table: str, columns: Iter, field_types: Iter, primary_keys: Iter) -> None:
-    execute_pg(conn, ct_pg_sql(table, columns, field_types, primary_keys))
+    execute_pg(conn.cursor(), ct_pg_sql(table, columns, field_types, primary_keys))
     conn.commit()
 
 
-@toolz.curry
+@cytoolz.curry
 def ct_my(conn: conn_my, table: str, columns: Iter, field_types: Iter, primary_keys: Iter) -> None:
     execute_my(conn, ct_pg_sql(table, columns, field_types, primary_keys))
     conn.commit()

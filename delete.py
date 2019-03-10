@@ -18,7 +18,7 @@ def deleteFrom(table: str, conn, identifier='`'):
 
 def dropTable(table: str, conn, identifier='`'):
     cur = conn.cursor()
-    sql = 'DROP TABLE {1}{0}{1}'.format(table, identifier)
+    sql = 'DROP TABLE IF EXISTS {1}{0}{1}'.format(table, identifier)
     print(sql)
     cur.execute(sql)
     conn.commit()

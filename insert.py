@@ -73,23 +73,6 @@ def i_lite(conn: conn_lite, table: str, df: pd.DataFrame) -> None:
     conn.commit()
 
 
-
-# def f() -> None:
-#
-#     try:
-#         raise sqlite3.IntegrityError('UNIQUE constraint :')
-#     except sqlite3.IntegrityError as e:
-#         if 'UNIQUE constraint failed:' in str(e):
-#             print(0, e)
-#         else:
-#             print(1, e)
-#             raise type(e)(e)
-#     except Exception as e:
-#         print(2, e)
-#         raise type(e)(e)
-# f()
-
-
 # @toolz.curry
 # def i_pg(conn: conn_pg, table: str, df: pd.DataFrame) -> List[dict]:
 #     exceptions = []
@@ -126,10 +109,6 @@ def insertData(table: str, df, conn) -> None:
     cols = list(df)
     for row in li:
         try:
-            # sql = 'insert into {0}{1}{0}({2}) values({3})'.format(identifier, table, quote_join_comma(identifier, list(df)), quote_join_comma(identifier1, row))
-            # print(sql)
-            # cur.execute(sql)  # do not commit every time because it's very slow
-
             sql = i_sql_lite(table, col_lite(cols), value_lite(row))
             execute_lite(cur, sql)
 
@@ -141,35 +120,6 @@ def insertData(table: str, df, conn) -> None:
             conn.commit()
             raise type(e)(e)
     conn.commit()
-
-# type(sqlite3.IntegrityError(1))
-# try:
-#     raise sqlite3.IntegrityError('err')
-# except Exception as ex:
-#     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-#     message = template.format(type(ex).__module__, ex.args)
-#     # raise type(ex)(ex)
-#     print(message)
-# else:
-#     print(ex)
-# finally:
-#     print(1)
-
-# def insertData(table: str, df, conn, identifier='`', identifier1="'"):
-#     global errorList
-#     errorList = []
-#     cur = conn.cursor()
-#     l = df.values.tolist()
-#     for row in l:
-#         try:
-#             sql = 'insert into {0}{1}{0}({2}) values({3})'.format(identifier, table, quote_join_comma(identifier, list(df)), quote_join_comma(identifier1, row))
-#             print(sql)
-#             cur.execute(sql)  # do not commit every time because it's very slow
-#         except Exception as e:
-#             logger.error(e)
-#             errorList.append(row)
-#             conn.commit()
-#     conn.commit()
 
 
 def insertDataMany(table: str, df, conn, identifier='`', identifier1='?'):
@@ -202,44 +152,9 @@ def insertDataMySql(table: str, df, conn, identifier='`', identifier1="'"):
 
 # insertDataPostgre = partial(insertData, identifier='"', identifier1='%s')
 insertDataPostgre = partial(insertData, identifier='"')
+# when UNIQUE constraint failed, executemany in sqlite will still insert unique rows while postgre won't
 insertDataManyPostgre = partial(insertDataMany, identifier='"', identifier1='%s')
 
 
-# when UNIQUE constraint failed, executemany in sqlite will still insert unique rows while postgre won't
-# def insertData(table: str, df, conn, identifier = '`', identifier1 = '?'):
-#     global errorList
-#     errorList = []
-#     cur = conn.cursor()
-#     sql = 'insert into {0}{1}{0}({2}) values({3})'.format(identifier, table, quote_join_comma(identifier, list(df)), ','.join([identifier1]*len(list(df))))
-#     l = df.values.tolist()
-#     for row in l:
-#         try:
-#             print(sql, row)
-#             cur.execute(sql, row) # do not commit every time because it's very slow
-#         except Exception as e:
-#             print(e)
-#             print(row)
-#             errorList.append(row)
-#             conn.commit()
-#             pass
-#     conn.commit()
 
-# def insertData(table: str, df, conn, identifier = '`', identifier1 = "'{}'"):
-#     global errorList
-#     errorList = []
-#     cur = conn.cursor()
-#     l = df.values.tolist()
-#     for row in l:
-#         try:
-#             sql = 'insert into {0}{1}{0}({2}) values({3})'.format(identifier, table, quote_join_comma(identifier, list(df)),','.join([identifier1] * len(list(df))))
-#             print(sql)
-#             sql = sql.format(*row)
-#             print(sql)
-#             cur.execute(sql) # do not commit every time because it's very slow
-#         except Exception as e:
-#             print(e)
-#             print(row)
-#             errorList.append(row)
-#             conn.commit()
-#             pass
-#     conn.commit()
+
