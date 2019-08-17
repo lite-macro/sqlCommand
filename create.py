@@ -67,6 +67,22 @@ def createTablePostgre(table: str, columns, field_types, primary_keys, conn, ide
     conn.commit()
 
 
+def createTablePostgreIfNotExists(table: str, columns, field_types, primary_keys, conn, identifier='"'):
+    cur = conn.cursor()
+    columnsQuote = quote(identifier, columns)
+    columns_join = ', '.join(cols_types(columnsQuote, field_types))
+    primary_keys_join = quote_join_comma(identifier, primary_keys)
+    sql = 'create table IF NOT EXISTS "{}" ({}, PRIMARY KEY({}))'.format(
+        table, columns_join, primary_keys_join)
+    print(sql)
+    try:
+        cur.execute(sql)
+    except Exception as e:
+        logger.error(e)
+        pass
+    conn.commit()
+
+
 def createTableMySql(table: str, columns, field_types, primary_keys, conn, identifier='`'):
     cur = conn.cursor()
     columnsQuote = quote(identifier, columns)
@@ -83,10 +99,40 @@ def createTableMySql(table: str, columns, field_types, primary_keys, conn, ident
     conn.commit()
 
 
+def createTableMySqlIfNotExists(table: str, columns, field_types, primary_keys, conn, identifier='`'):
+    cur = conn.cursor()
+    columnsQuote = quote(identifier, columns)
+    columns_join = ', '.join(cols_types(columnsQuote, field_types))
+    primary_keys_join = quote_join_comma(identifier, primary_keys)
+    sql = 'create table IF NOT EXISTS `{}` ({}, PRIMARY KEY({}))'.format(
+        table, columns_join, primary_keys_join)
+    print(sql)
+    try:
+        cur.execute(sql)
+    except Exception as e:
+        logger.error(e)
+        pass
+    conn.commit()
+
+
 def createTable(table: str, columns, primary_keys, conn, identifier='`'):
     columns_join = quote_join_comma(identifier, columns)
     primary_keys_join = quote_join_comma(identifier, primary_keys)
     sql = 'create table "{}" ({}, PRIMARY KEY({}))'.format(
+        table, columns_join, primary_keys_join)
+    print(sql)
+    try:
+        conn.execute(sql)
+    except Exception as e:
+        logger.error(e)
+        pass
+    conn.commit()
+
+
+def createTableIfNotExists(table: str, columns, primary_keys, conn, identifier='`'):
+    columns_join = quote_join_comma(identifier, columns)
+    primary_keys_join = quote_join_comma(identifier, primary_keys)
+    sql = 'create table IF NOT EXISTS "{}" ({}, PRIMARY KEY({}))'.format(
         table, columns_join, primary_keys_join)
     print(sql)
     try:
